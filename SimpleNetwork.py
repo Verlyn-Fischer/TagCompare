@@ -19,12 +19,12 @@ class Trainer():
     def __init__(self,experiment,dataFile):
 
         # Hyper Parameters
-        self.minibatch_size = 512
-        self.initial_weights_setting = 0.5
-        self.learning_rate = 0.001
-        self.total_iterations = 1000
-        self.iterations_between_test = 100
-        self.iterations_in_test = 200
+        self.minibatch_size = 1024
+        self.initial_weights_setting = 0.3
+        self.learning_rate = 0.0005
+        self.total_iterations = 600
+        self.iterations_between_test = 2
+        self.iterations_in_test = 500
         self.learning_data = []
         self.model = Net()
         self.experiment = experiment
@@ -127,16 +127,17 @@ class Net(nn.Module):
         super(Net, self).__init__()
 
         observation_width = 1
-        connect_1_2 = 3
-        connect_2_3 = 4
+        connect_1_2 = 6
+        connect_2_3 = 12
         connect_3_4 = 6
 
         self.fc1 = nn.Linear(in_features=observation_width, out_features=connect_1_2)
         self.relu1 = nn.ReLU(inplace=True)
+        # self.dropout1 = nn.Dropout(p=0.2)
 
         self.fc2 = nn.Linear(in_features=connect_1_2, out_features=connect_2_3)
         self.relu2 = nn.ReLU(inplace=True)
-        self.dropout2 = nn.Dropout(p=0.2)
+        # self.dropout2 = nn.Dropout(p=0.2)
 
         self.fc3 = nn.Linear(in_features=connect_2_3, out_features=connect_3_4)
 
@@ -146,22 +147,29 @@ class Net(nn.Module):
         out = x
         out = self.fc1(out)
         out = self.relu1(out)
+        # out = self.dropout1(out)
         out = self.fc2(out)
         out = self.relu2(out)
-        out = self.dropout2(out)
+        # out = self.dropout2(out)
         out = self.fc3(out)
 
         return out
 
 def main():
-    myTraininer = Trainer('CleanRun14','LearningDataClean.pkl')
-    modelFile = 'models/' + myTraininer.experiment + '.pth'
-    if os.path.exists(modelFile):
-        myTraininer.model = torch.load(modelFile, map_location='cpu').eval()
+
+    # Settings
+    experiment = 'DirtyRun3'
+    myTraininer = Trainer(experiment,'LearningDataDirty.pkl')
+    startModelFile = 'models/' + 'DirtyRun3' + '.pth'
+
+    # No need to modify
+    saveModelFile = 'models/' + experiment + '.pth'
+    if os.path.exists(startModelFile):
+        myTraininer.model = torch.load(startModelFile, map_location='cpu').eval()
     else:
         myTraininer.init_weights()
     myTraininer.loadTrainingData()
     myTraininer.train()
-    torch.save(myTraininer.model, modelFile)
+    torch.save(myTraininer.model, saveModelFile)
 
 main()
